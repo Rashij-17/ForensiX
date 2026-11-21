@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "forensix"
+version = "1.0.0"
+description = "ForensiX: multimodal digital media forensics and authenticity intelligence"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = [
+  "numpy", "pandas", "scipy", "scikit-learn", "xgboost", "statsmodels", "shap",
+  "opencv-python-headless", "pillow", "scikit-image", "librosa", "soundfile",
+  "matplotlib", "seaborn", "plotly", "joblib", "pyyaml",
+  "mlflow", "fastapi", "uvicorn", "python-multipart", "streamlit", "requests",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "httpx", "black", "flake8", "dvc"]
+
+[project.scripts]
+forensix = "forensix.pipeline:main"
+
+[tool.setuptools.packages.find]
+include = ["forensix*", "api*"]
+
+[tool.black]
+line-length = 120
+

@@ -1,0 +1,15 @@
+# Scheduled monitoring: reports drift / degradation. Retraining needs the production data volume, so this job
+# only checks; run `make retrain` where the prediction log and dataset live.
+name: Monitor
+on:
+  workflow_dispatch:
+  schedule: [{ cron: "0 6 * * 1" }]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: pip install -r requirements.txt && pip install -e . --no-deps
+      - run: python scripts/monitor_and_retrain.py --check

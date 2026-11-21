@@ -1,0 +1,28 @@
+# DVC pipeline: dataset versioning + reproducible stages.  Usage:  dvc init && dvc add data/raw && dvc repro
+# (data/raw is tracked with `dvc add data/raw`; the stages below track everything derived from it.)
+stages:
+  ingest:
+    cmd: python -m forensix.pipeline ingest
+    deps: [data/raw, forensix/data/dataset.py, forensix/preprocess]
+    params: [config/params.yaml:seed, config/params.yaml:data, config/params.yaml:audio, config/params.yaml:image, config/params.yaml:video, config/params.yaml:versions]
+    outs: [data/processed]
+    metrics: [artifacts/dataset_versions.json]
+  features:
+    cmd: python -m forensix.pipeline features
+    deps: [data/processed, forensix/features]
+    outs: [data/features]
+  stats:
+    cmd: python -m forensix.pipeline eda stats
+    deps: [data/features]
+    outs: [reports/eda]
+  train:
+    cmd: python -m forensix.pipeline train explain generators summary
+    deps: [data/features, forensix/models]
+    params: [config/params.yaml:models, config/params.yaml:training, config/params.yaml:shap]
+    outs: [models]
+    metrics: [reports/model_comparison.csv]
+  robustness:
+    cmd: python -m forensix.pipeline robustness
+    deps: [models, data/processed]
+    params: [config/params.yaml:robustness]
+    metrics: [reports/robustness_image.csv, reports/robustness_audio.csv, reports/robustness_video.csv]

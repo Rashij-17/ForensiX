@@ -1,0 +1,22 @@
+services:
+  api:
+    build: .
+    ports: ["8000:8000"]
+    environment: [FORENSIX_HOME=/app]
+    volumes: ["./data:/app/data", "./models:/app/models", "./artifacts:/app/artifacts", "./reports:/app/reports"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health').raise_for_status()"]
+      interval: 15s
+      retries: 5
+  app:
+    build: .
+    command: ["python", "-m", "streamlit", "run", "frontend/app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+    ports: ["8501:8501"]
+    environment: [FORENSIX_HOME=/app, "FORENSIX_API_URL=http://api:8000"]
+    depends_on: [api]
+    volumes: ["./data:/app/data", "./models:/app/models", "./artifacts:/app/artifacts", "./reports:/app/reports"]
+  mlflow:
+    build: .
+    command: ["python", "-m", "mlflow", "ui", "--backend-store-uri", "sqlite:///artifacts/mlflow.db", "--host", "0.0.0.0", "--port", "5000"]
+    ports: ["5000:5000"]
+    volumes: ["./artifacts:/app/artifacts"]
